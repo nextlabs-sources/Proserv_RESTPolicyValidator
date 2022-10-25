@@ -1,0 +1,273 @@
+import org.apache.tools.ant.filters.FixCrLfFilter
+
+buildscript {
+    repositories {
+        maven {
+            url "${artifactoryContextUrl}/libs-release"
+            credentials {
+                username = artifactoryUser
+                password = artifactoryPassword
+            }
+        }
+    }
+    dependencies {
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0'
+    }
+}
+
+plugins {
+    id 'base'
+    id 'java'
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.artifactory'
+
+repositories {
+    maven {
+        url artifactoryContextUrl + (version.endsWith('SNAPSHOT') ? '/libs-snapshot' : '/libs-release')
+        credentials {
+            username = artifactoryUser
+            password = artifactoryPassword
+        }
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+}
+
+artifactory {
+    contextUrl = artifactoryContextUrl
+    publish {
+        repository {
+            repoKey = version.endsWith('SNAPSHOT') ? 'libs-snapshot-local' : 'libs-release-local'
+            username = artifactoryUser
+            password = artifactoryPassword
+            maven = true
+        }
+        defaults {
+            publications('policyValidator')
+            publishBuildInfo = false
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'libs-snapshot'
+            username = artifactoryUser
+            password = artifactoryPassword
+            maven = true
+        }
+    }
+}
+
+apply from: 'versions.gradle'
+
+configurations {
+    download
+}
+
+dependencies {
+    download "com.nextlabs.cc.node:node-linux:${versions.node}@zip"
+    download "com.nextlabs.cc.node:node-windows:${versions.node}@zip"
+}
+
+publishing {
+    publications {
+        policyValidator(MavenPublication) {
+            groupId group
+            artifactId rootProject.name
+            version version
+            artifact(file("${buildDir}/distributions/${appName}-${appVersion}.zip"))
+        }
+    }
+}
+
+def policyValidatorPackageDir = "${buildDir}/distributions/package/${appName}-${appVersion}"
+
+task buildPackage {
+    doLast {
+        mkdir policyValidatorPackageDir
+        mkdir "${policyValidatorPackageDir}/certs"
+        mkdir "${policyValidatorPackageDir}/logs"
+        copy {
+            from '.'
+            into "${policyValidatorPackageDir}"
+            include 'data/'
+            include 'index.html'
+            include 'install-service.bat'
+            include 'install-service.sh'
+            include 'installService.js'
+            include 'lib/'
+            include 'package-lock.json'
+            include 'package.json'
+            include 'public/'
+            include 'server.js'
+            include 'start.bat'
+            include 'start.sh'
+            include 'uninstallService.js'
+            exclude "public/index-build.html"
+            exclude "public/ui/test"
+            exclude "public/ui/testlib"
+            exclude "public/ui/Gruntfile.js"
+            exclude "public/ui/karma.conf.js"
+        }
+        copy {
+            from './start.sh'
+            into policyValidatorPackageDir
+            filter(FixCrLfFilter.class, eol: FixCrLfFilter.CrLf.newInstance("unix"))
+        }
+        copy {
+            from './start.bat'
+            into policyValidatorPackageDir
+            filter(FixCrLfFilter.class, eol: FixCrLfFilter.CrLf.newInstance("dos"))
+        }
+        copy {
+            from "${policyValidatorPackageDir}/data"
+            into "${policyValidatorPackageDir}/backup/data"
+        }
+        new File("${policyValidatorPackageDir}/version.txt")
+                .write(String.format("# NextLabs Policy Validator%snextlabs.policy-validator.version=${appVersion}%snextlabs.policy-validator.build=${buildNumber}",
+                        System.lineSeparator(), System.lineSeparator()))
+        copy {
+            from zipTree(configurations.download.find { it.name == "node-windows-${versions.node}.zip" })
+            into "${policyValidatorPackageDir}"
+            include "node-windows-${versions.node}/node.exe"
+        }
+        copy {
+            from "${policyValidatorPackageDir}/node-windows-${versions.node}"
+            into "${policyValidatorPackageDir}"
+        }
+        delete "${policyValidatorPackageDir}/node-windows-${versions.node}"
+        copy {
+            from zipTree(configurations.download.find { it.name == "node-linux-${versions.node}.zip" })
+            into "${policyValidatorPackageDir}"
+            include "node-linux-${versions.node}/bin/node"
+
+        }
+        copy {
+            from "${policyValidatorPackageDir}/node-linux-${versions.node}/bin"
+            into "${policyValidatorPackageDir}"
+        }
+        delete "${policyValidatorPackageDir}/node-linux-${versions.node}"
+    }
+}
+
+task changePermission {
+  doLast {
+    project.exec {
+      commandLine("sudo", "chgrp", "-R", "0", "${policyValidatorPackageDir}/")
+    }
+    project.exec {
+      commandLine("sudo", "chmod", "-R", "g+rwX", "${policyValidatorPackageDir}/")
+    }
+    project.exec {
+      commandLine("sudo", "chmod", "-R", "g+x", "${policyValidatorPackageDir}/start.sh")
+    }
+    project.exec {
+      commandLine("sudo", "chmod", "-R", "g+x", "${policyValidatorPackageDir}/node")
+    }
+  }
+}
+
+task copyNodeModules {
+    doLast {
+        copy {
+            from './node_modules'
+            into "${policyValidatorPackageDir}/node_modules"
+        }
+    }
+}
+
+task buildZipPackage(type: Zip) {
+    archiveFileName = "${appName}-${appVersion}.zip"
+    destinationDirectory = file("${buildDir}/distributions/")
+    from ("${buildDir}/distributions/package") {
+        include "${appName}-${appVersion}/**"
+    }
+}
+
+task npmInstall(type: Exec) {
+    workingDir "${policyValidatorPackageDir}"
+    commandLine "${npmPath}", 'install'
+}
+
+buildPackage.finalizedBy(npmInstall)
+npmInstall.finalizedBy(copyNodeModules)
+buildPackage.finalizedBy(buildZipPackage)
+
+def containerImageTag = String.format("%s${appName}:${appVersion}",
+        project.hasProperty('containerRegistryURL') ? "${containerRegistryURL}/" : "")
+
+task buildContainer(type: Exec) {
+    doFirst {
+        delete "${policyValidatorPackageDir}/node.exe"
+        delete "${policyValidatorPackageDir}/start.bat"
+        copy {
+            from './Dockerfile'
+            into "${buildDir}/distributions/package"
+        }
+        copy {
+            from './licensing.txt'
+            into "${buildDir}/distributions/package"
+        }
+        copy {
+            from './scripts/passwd.template'
+            into "${buildDir}/distributions/package"
+        }
+        copy {
+            from './scripts/start.sh'
+            into policyValidatorPackageDir
+            filter(FixCrLfFilter.class, eol: FixCrLfFilter.CrLf.newInstance("unix"))
+        }
+        project.exec {
+            commandLine("sudo", "chmod", "-R", "g+x", "${policyValidatorPackageDir}/start.sh")
+        }
+        file(policyValidatorPackageDir).renameTo(file("${buildDir}/distributions/package/${appName}"))
+    }
+    workingDir "${buildDir}/distributions/package"
+    commandLine 'docker', 'build',
+            '--build-arg', "APP_DISPLAY_NAME=${appDisplayName}",
+            '--build-arg', "VERSION=${appVersion}",
+            '--build-arg', "BUILD_NUMBER=${buildNumber}",
+            '-f', "${projectDir}/Dockerfile",
+            '-t', "${containerImageTag}",
+            '.'
+}
+
+task publishContainer(type: Exec) {
+    commandLine 'docker', 'push', "${containerImageTag}"
+}
+
+def helmChartDir = "${buildDir}/helm-chart/"
+task packageHelmChart(type: Exec) {
+    doFirst {
+        mkdir helmChartDir
+        copy {
+            from "./helm-chart"
+            into "${helmChartDir}/helm-chart"
+        }
+        ant.replaceregexp(match: '\\$\\{appVersion\\}', replace: appVersion, flags: 'g', byline: true) {
+            fileset(dir: "${helmChartDir}/helm-chart", includes: 'Chart.yaml')
+        }
+    }
+    workingDir helmChartDir
+    commandLine "${helmLocation}helm", 'package', './helm-chart'
+}
+
+task publishHelmChart(type: Exec) {
+    workingDir helmChartDir
+    commandLine "${helmLocation}helm", 'push', "--username=${helmChartRepositoryUsername}",
+            "--password=${helmChartRepositoryPassword}", "${appName}-${appVersion}.tgz", "${helmChartRepositoryName}"
+}
+
+task publishBuild {
+    doLast {
+        copy {
+            from "${buildDir}/distributions"
+            into "${buildPublishLocation}/RESTPolicyValidator/${appVersion}/${buildNumber}"
+            include "${appName}-${appVersion}.zip"
+            rename "${appName}-${appVersion}.zip", "${appName}-${appVersion}-${buildNumber}.zip"
+        }
+    }
+}

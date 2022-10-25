@@ -1,0 +1,21 @@
+<div class="modal-header" data-ng-if="title">
+	<h3 class="modal-title">{{ title }}</h3>
+</div>
+<div class="modal-body" data-ng-if="msg">
+	<table class="sc-dialog-table">
+		<tr>
+			<td>
+				<div>
+					<i class="fa fa-warning sc-dialog-icon" data-ng-class="type" data-ng-if ="type == 'sc-dialog-warning'"></i>
+					<i class="fa fa-check-circle sc-dialog-icon" data-ng-class="type" data-ng-if ="type == 'sc-dialog-success'"></i>
+					<i class="fa fa-times-circle sc-dialog-icon" data-ng-class="type" data-ng-if ="type == 'sc-dialog-error'"></i>
+				</div>
+			</td>
+			<td class="sc-dialog-text"><span >{{ msg }}</span></td>
+		</tr>
+	</table>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-primary" type="button" ng-click="ok()">{{"dialog.ok"
+		| translate}}</button>
+</div>

@@ -1,0 +1,71 @@
+<div class = "page-top-bar">
+	<div class = "page-top-bar-left">
+		<div class = "page-title">
+			<span>{{'test.sets.label' | translate}}</span>
+		</div>
+	</div>
+
+	<div class = "page-top-bar-right">
+		<md-button class="md-accent inline-block" data-ng-click="createNewTestSet()" aria-label = "New Test Set"><i class="fa fa-plus uppercase"></i>&nbsp;&nbsp;{{"button.newTestSet"
+		| translate}}</md-button>
+	</div>
+</div>
+
+
+<div class="list-toolbar" data-ng-if = "tree.tabs && tree.tabs.length > 0">
+        <md-checkbox aria-label="Select All"
+                ng-checked="allIsChecked()"
+                md-indeterminate="someIsChecked()"
+                data-ng-click="toggleAll()">
+        </md-checkbox>
+        <md-button class="button-icon" data-ng-click="deleteTestSets()" aria-label = "Delete" ng-disabled = "tree.selectedTabs.length === 0">
+          <i class="fa fa-trash uppercase" ></i></md-button>
+        <!--<md-button class="button-icon" data-ng-click="cloneTestSets()" aria-label = "Clone" ng-disabled = "tree.selectedTabs.length === 0">
+          <i class="fa fa-copy uppercase" ></i></md-button>-->
+
+</div>
+
+<table class = "list-table">
+	<tr data-ng-repeat = "testSet in tree.tabs | orderBy : 'title'">
+		<td style = "width:60px">
+			<md-checkbox ng-checked="testSetIsCheck(testSet)" data-ng-click="toggleTestSet(testSet)" aria-label="Select Test Set">
+		</td>
+		<td class = "list-title-cell">
+			<p class = "list-title" data-ng-click = "goToTestSet(testSet)" uib-tooltip="{{testSet.title}}" tooltip-placement = "bottom-left">{{testSet.title}}</p>
+			<p class = "list-sub-text">{{'contains.label' | translate}} {{(testSet.children.length)?testSet.children.length:0}} {{'test.cases.label' | translate}}</p>
+		</td>
+		<td style = "width: 100px">
+			<md-fab-speed-dial md-open="testSet.openOptions" md-direction="left" class = "md-scale"
+                    data-ng-click = "optionClick(testSet)">
+        		<md-fab-trigger>
+          			<md-button aria-label="menu" class="md-fab md-primary md-hue-3 md-raised md-mini">
+          				<i class="fa fa-ellipsis-v" aria-label = "fab"></i>
+          			</md-button>
+        		</md-fab-trigger>
+
+        		<md-fab-actions>
+          			<md-button aria-label="Delete" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "deleteTestSet($event, testSet)">
+           				<i class="fa fa-trash" aria-label = "fab" ></i>
+									<md-tooltip>{{'delete.label' | translate}}</md-tooltip>
+          			</md-button>
+
+          			<md-button aria-label="Clone" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "cloneTestSet($event, testSet)">
+           				<i class="fa fa-copy" aria-label = "fab"></i>
+									<md-tooltip>{{'clone.label' | translate}}</md-tooltip>
+					  </md-button>
+
+					<md-button aria-label="Rename" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "renameTestSet($event, testSet)">
+           				<i class="fa fa-edit" aria-label = "fab"></i>
+									<md-tooltip>{{'rename.label' | translate}}</md-tooltip>
+          			</md-button>
+
+          			<md-button aria-label="Play" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-if = "false">
+           				<i class="fa fa-play" aria-label = "fab"></i>
+          			</md-button>
+        		</md-fab-actions>
+      		</md-fab-speed-dial>
+		</td>
+	</tr>
+</table>
+
+<div class = "empty-data-div" data-ng-if="!(tree.tabs && tree.tabs.length > 0)">{{'no.test.set.label' | translate}}</div>

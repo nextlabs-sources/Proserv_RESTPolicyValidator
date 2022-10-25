@@ -1,0 +1,23 @@
+<div class='tag-input-ctn' id="tag-input-ctn">
+	<div class='input-tag' data-ng-repeat="tag in tagArray()">
+		{{tag.value}}
+		<div class='delete-tag' data-ng-click='deleteTag($index)'>&times;</div>
+	</div>
+	<input data-ng-style='{width: inputWidth}' data-ng-model='tagText'
+		data-ng-class="{'has-error': form[name].$touched && (!tagText ||tagText.length === 0) && tagArray().length === 0 && inputRequired == 'true'}"
+		data-ng-required="tagArray().length === 0 && inputRequired == 'true'"
+		uib-tooltip="{{form[name].$valid ? '' : 'component.required.validation' |
+									translate}}"
+		tooltip-trigger="{{{true: 'focus', false:
+									'never'}[form[name].$invalid]}}"
+		tooltip-placement="bottom" name="{{name}}"
+		placeholder='{{placeholder}}' data-ng-blur = "addTag()"/>
+</div>
+
+<div class="sc-validation-block-sm" data-ng-show="invalidInput">
+	<p>{{'multi.param.invalid.' + inputType | translate}}</p>
+</div>
+
+<div class="sc-validation-block-sm" data-ng-show="duplicateInput">
+	<p>{{'multi.param.duplicate' | translate}}</p>
+</div>

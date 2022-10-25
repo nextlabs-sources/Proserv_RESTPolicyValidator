@@ -1,0 +1,46 @@
+<div class="menu layout-full-height">
+	<div data-ng-repeat="(index, tab) in tree.tabs | orderBy: 'title'" data-ng-if="current.currentScreen === 'Home'">
+		<div data-ng-if="!tab.children"
+			<button class="menu-item" uib-tooltip="{{tab.title}}" tooltip-placement = "bottom"
+				data-ng-class="{'menu-selected':isActiveTab(tab.url)}"
+				data-ng-click="onTestSetClick(tab)"> <span
+				class="menu-icon"><i class="fa" data-ng-class="tab.icon"></i></span>{{tab.title}}
+			</button>
+		</div>
+
+		<div data-ng-if="tab.children">
+			<div data-ng-class="{'menu-item-expanded':tab.expanded}">
+				<table class = "test-set-with-child-menu">
+					<tr><td width ="100%">
+						<button class="menu-item"  uib-tooltip="{{tab.title}}" tooltip-placement = "bottom-left"
+						data-ng-class="{'menu-selected':isActiveTab(tab.url), 'menu-item-expanded' :tab.expanded }"
+						data-ng-click="onTestSetClick(tab, index)"> <span><i class="fa" data-ng-class="tab.icon"></i></span>{{tab.title}}</button></td><!--<td class ="expand-button" width = "10%">
+						<button data-ng-click="expandTab(tab)" data-ng-class ="{'expand-button-focus':isActiveTab(tab.url)}"><i
+						class="fa"
+						data-ng-class="{'fa-angle-up':tab.expanded, 'fa-angle-down':!tab.expanded}"></i></button ></td>--></tr>
+				</table>
+			</div>
+			<div class="sub-menu" uib-collapse="!tab.expanded">
+				<div data-ng-repeat="(subindex, subtab) in tab.children | orderBy: 'title'"
+					class="menu-item-box">
+					<button class="sub-menu-item menu-item" uib-tooltip="{{subtab.title}}" tooltip-placement = "bottom-left"
+						data-ng-class="{'menu-selected':isActiveTab(subtab.url)}"
+						data-ng-click="onTestCaseClick(tab, subtab, subindex)"> <span
+						class="menu-icon"><i class="fa" data-ng-class="subtab.icon"></i>{{subtab.title}} </button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div data-ng-if="current.currentScreen === 'Settings'">
+		<button class="menu-item" data-ng-click="setSettingsScreen('PC')" data-ng-class="{'menu-selected':isActiveSettingsTab('PC')}">
+			<span class="menu-icon"><i class="fa fa-gear"></i></span>Policy Controller Settings
+		</button>
+		<button class="menu-item" data-ng-click="setSettingsScreen('SA')" data-ng-class="{'menu-selected':isActiveSettingsTab('SA')}">
+			<span class="menu-icon"><i class="fa fa-user"></i></span>Subject Attributes
+		</button>
+		<button class="menu-item" data-ng-click="setSettingsScreen('RA')" data-ng-class="{'menu-selected':isActiveSettingsTab('RA')}">
+			<span class="menu-icon"><i class="fa fa-file"></i></span>Resource Attributes
+		</button>
+	</div>
+</div>

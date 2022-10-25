@@ -1,0 +1,85 @@
+{
+  "Request": {
+    "ReturnPolicyIdList": "false",
+    "Category": [
+      {
+        "CategoryId": "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject",
+        "Attribute": [
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+            "Value": "Alice",
+            "IncludeInResult": false,
+            "Issuer": ""
+          }
+        ]
+      },
+      {
+        "CategoryId": "urn:oasis:names:tc:xacml:3.0:attribute-category:action",
+        "Attribute": [
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:oasis:names:tc:xacml:1.0:action:action-id",
+            "Value": "OPEN",
+            "IncludeInResult": false,
+            "Issuer": ""
+          }
+        ]
+      },
+      {
+        "CategoryId": "urn:oasis:names:tc:xacml:3.0:attribute-category:resource",
+        "Attribute": [
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+            "Value": "document.doc",
+            "IncludeInResult": false,
+            "Issuer": ""
+          },
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:nextlabs:names:evalsvc:1.0:resource:resource-type",
+            "Value": "fso",
+            "IncludeInResult": false,
+            "Issuer": ""
+          },
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:nextlabs:names:evalsvc:1.0:resource:resource-dimension",
+            "Value": "from",
+            "IncludeInResult": false,
+            "Issuer": ""
+          },
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:oasis:names:tc:xacml:1.0:resource:nocache",
+            "Value": "yes",
+            "IncludeInResult": false,
+            "Issuer": ""
+          },
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:oasis:names:tc:xacml:1.0:resource:SecurityClassification",
+            "Value": [
+              "ITAR"
+            ],
+            "IncludeInResult": false,
+            "Issuer": ""
+          }
+        ]
+      },
+      {
+        "CategoryId": "urn:nextlabs:names:evalsvc:1.0:attribute-category:application",
+        "Attribute": [
+          {
+            "DataType": "http://www.w3.org/2001/XMLSchema#string",
+            "AttributeId": "urn:nextlabs:names:evalsvc:1.0:application:application-id",
+            "Value": "Policy Validator",
+            "IncludeInResult": false,
+            "Issuer": ""
+          }
+        ]
+      }
+    ]
+  }
+}

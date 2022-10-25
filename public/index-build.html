@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<!-- If IE use the latest rendering engine -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link href="ui/lib/bootstrap/3.3.5/css/bootstrap.min.css"
+	rel="stylesheet">
+<link href="ui/lib/jquery-ui/1.11.0/jquery-ui.min.css" rel="stylesheet">
+<link href="ui/lib/jquery-ui/1.11.0/theme.css" rel="stylesheet">
+<link href="ui/lib/font-awesome/4.4.0/css/font-awesome.min.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-ui-switch/angular-ui-switch.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-material/1.0.0/angular-material.min.css"
+	rel="stylesheet">
+<link href="ui/lib/ng-tags-input/3.0/ng-tags-input.min.css"
+	rel="stylesheet">
+<link href="ui/lib/ng-tags-input/3.0/ng-tags-input.bootstrap.min.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-ui-layout/ui-layout.css" rel="stylesheet">
+<link href="ui/lib/jsoneditor/jsoneditor.min.css" rel="stylesheet">
+<link href="ui/css/style.css" rel="stylesheet">
+<link href="ui/css/font/fira.css" rel="stylesheet">
+<link href="nxce.ico" rel="shortcut icon" type="image/x-icon" />
+<script type="text/javascript" src="ui/config/config.js"></script>
+</head>
+
+<body data-ng-app="mainApp" data-ng-controller = "appController">
+	<div class="vd-header" ng-cloak>
+			<div class="vd-header-logo inline-block"></div>
+			<div class="vd-header-name inline-block">
+				<a href="#/index.html">{{'policy.validator.label'|
+					translate}}</a>
+			</div>
+		</div>
+
+	<div ui-layout = "{flow: 'column', disableToggle: true}" class = "ui-layout-row" id = "main-layout" ng-cloak ui-layout-loaded>
+		<div ui-layout-container class = "stretch ui-layout-container" size = "20%" id = "navi-layout">
+			<div class="menu-new">
+				<md-button class="md-raised md-primary inline-block" data-ng-click="createNewTestSet()"><i class="fa fa-plus uppercase"></i>&nbsp;&nbsp;{{"button.newTestSet"
+					| translate}}</md-button>
+				<md-button class="md-raised md-primary inline-block" data-ng-click="goHome()"><i class="fa fa-gear uppercase"></i>&nbsp;&nbsp;{{"button.configure"
+					| translate}}</md-button>
+				
+			</div>
+			<div data-ng-class="">
+					<div class="layout-full-height" data-ng-cloak
+						ng-include="'./ui/app/templates/menu.html'"
+						style="overflow-y: auto; overflow-x: hidden"></div>
+			</div>
+		</div>
+		<div ui-layout-container class = "stretch ui-layout-container">
+			<div ui-layout = "{flow: 'row', disableToggle: true, dividerSize: 0}" ui-layout-loaded id = "right-layout">
+				<div ui-layout-container id = "content">
+					<div class="view-content">
+						<div class = "layout-full-height" data-ng-class="transition"
+							data-ng-cloak ui-view></div>
+					</div>
+					<div style = "background: #555555;height: 8px; width: 100%"></div>
+				</div>
+
+				<div ui-layout-container id = "response" collapsed="layout.response" size="300px">
+					<md-content class="layout-full-height" id = "response-content" data-ng-if = "requestResponse.data">
+          				<div ng-jsoneditor="onLoad" data-ng-model="requestResponse.data" options="obj.responseOptions" class = "json-editor" data-ng-if  = "rawResponse"></div>
+          				<div data-ng-if = "!rawResponse" class = "layout-full-height response-interface" id = "response-interface">
+          					
+          					<div class = "response-table">
+          					<table >
+          						<tr>
+          							<td width = "10%" class = "label-column"><span >{{'decision.label' | translate}}</span></td>
+          							<td>
+          								<span class = "allow-class" data-ng-if = "requestResponse.data.Response.Result[0].Decision === 'Permit'">{{'allow.label' | translate}}</span>
+          								<span class = "deny-class" data-ng-if = "requestResponse.data.Response.Result[0].Decision === 'Deny'">{{'deny.label' | translate}}</span>
+          								<span class = "indeterminate-class" data-ng-if = "requestResponse.data.Response.Result[0].Decision === 'Indeterminate'">{{'indeterminate.label' | translate}}</span>
+          							</td>
+          						<tr>
+          						<tr>
+          							<td width = "10%" class = "label-column"><span >{{'message.label' | translate}}</span></td>	
+          							<td><span class = "message">{{requestResponse.data.Response.Result[0].Status.StatusMessage}}</span></td>
+          						</tr>
+          						<tr data-ng-if = "requestResponse.data.Response.Result[0].Obligations.length == 0">
+          							<td colspan = "2">
+          								<span >{{'empty.obligations' | translate}}</span>
+          							</td>
+          						</tr>
+          						<tr data-ng-if = "requestResponse.data.Response.Result[0].Obligations.length > 0">
+          							<td width = "10%" class = "label-column"><span >{{'obligations.label' | translate}}</span></td>	
+          							<td width = "90%">
+          								<div data-ng-repeat = "(index, obligation) in requestResponse.data.Response.Result[0].Obligations" class = "obligation-block">
+          									<div class = "obligation-name-block">
+          										<div style = "color: #EEEEEE; background: #777777; padding:5px 10px 5px 10px">{{'name.label' | translate}}</div>
+          										<label style = "padding: 5px 5px">{{obligation.Id}}</label>
+          									</div>
+          									<table class = "attribute-table">
+          										<tr>
+          											<td colspan = "2" style = "color: #EEEEEE; background: #777777; ">{{'attribute.label' | translate}}</td>
+          										</tr>
+          										<tr data-ng-repeat = "(index, attribute) in obligation.AttributeAssignment" >
+          											<td width = "20%" style = "color: #666666">{{attribute.AttributeId}}</td>
+          											<td><span data-ng-repeat = "value in attribute.Value">{{value}}</td>
+          										</tr>
+          									</table>
+          								</div>
+          							</td>
+          						</tr>
+          					</table>
+          					</div>
+          					
+          					<div id = "test-case-status" data-ng-class = "status + '-status-class'">
+          						<span data-ng-if ="status === 'passed'">{{'test.case.passed' | translate}}</span>
+          						<span data-ng-if ="status === 'failed'">{{'test.case.failed' | translate}}</span>
+          					</div>
+
+          				</div>
+       				</md-content>
+       				<div id = "response-toolbar" class = "layout-full-height">
+       					<md-button class = "md-icon-button md-raised" data-ng-click = "dismissResult()" aria-label="dismiss" uib-tooltip="{{'dismiss.label' | translate}}" 
+       					tooltip-placement = "left"><i
+          					class="fa fa-close icon-button"></i></md-button>
+       				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div data-http-loader class="data-loading">
+		<!-- <p style="text-align: center" class="sc-vertical-middle-div">Loading...</p> -->
+		<div layout="row" layout-sm="column" layout-align="space-around"
+			class="vertical-middle-div">
+			<md-progress-circular md-mode="indeterminate" md-diameter="120px"></md-progress-circular>
+		</div>
+	</div>
+
+
+
+	<script type="text/javascript" src="ui/lib/jquery/1.8.2/jquery.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/jquery-ui/1.11.0/jquery-ui.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-aria.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-sanitize.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-animate.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-messages.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui/bootstrap/ui-bootstrap-tpls-0.14.3.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui/angular-ui-numeric.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-switch/angular-ui-switch.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-translate/2.8.1/angular-translate.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-material/1.0.0/angular-material.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-translate/angular-translate-loader-static-files.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-input-mask/angular-input-masks-standalone.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-layout/ui-layout.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/jsoneditor/jsoneditor.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/ng-jsoneditor/ng-jsoneditor.min.js"></script>
+
+
+	<script type="text/javascript" src="ui/app/templates.js"></script>
+	<script type="text/javascript" src="ui/app/app.js"></script>
+
+	<script type="text/javascript" src="ui/app/services/categoryService.js"></script>
+	<script type="text/javascript" src="ui/app/services/generalService.js"></script>
+	<script type="text/javascript" src="ui/app/services/loggerService.js"></script>
+	<script type="text/javascript" src="ui/app/services/networkService.js"></script>
+	<script type="text/javascript" src="ui/app/services/configService.js"></script>
+	<script type="text/javascript" src="ui/app/services/sharedService.js"></script>
+	<script type="text/javascript" src="ui/app/services/dialogService.js"></script>
+	<script type="text/javascript" src="ui/app/services/toastService.js"></script>
+	<script type="text/javascript" src="ui/app/services/evaluateService.js"></script>
+	<script type="text/javascript"
+		src="ui/app/services/statusCodeService.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestSet/services/testSetServices.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestCase/services/testCaseServices.js"></script>
+	<script type="text/javascript"
+		src="ui/app/Overview/services/overviewServices.js"></script>
+
+	<script type="text/javascript"
+		src="ui/app/Overview/overviewController.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestSet/testSetController.js"></script>	
+	<script type="text/javascript"
+		src="ui/app/TestCase/testCaseController.js"></script>
+
+
+	<script type="text/javascript" src="ui/app/appController.js"></script>
+	<script type="text/javascript" src="ui/app/directives/httpLoader.js"></script>
+	<script type="text/javascript" src="ui/app/directives/multiParam.js"></script>
+</body>
+
+</html>

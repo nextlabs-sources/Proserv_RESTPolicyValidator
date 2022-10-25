@@ -1,0 +1,193 @@
+<md-content class="layout-full-height" style="height: calc(100%)">
+    <div class = "page-top-bar">
+      <div class = "page-top-bar-left">
+        <div class = "page-title" uib-tooltip="{{current.currentTestCase.title}}" tooltip-placement = "bottom-left">
+          <span ng-if="isActiveSettingsTab('PC')">{{'policy.controller.settings.label' | translate}}</span>
+          <span ng-if="isActiveSettingsTab('SA')">{{'subject.attributes.label' | translate}}</span>
+          <span ng-if="isActiveSettingsTab('RA')">{{'resource.attributes.label' | translate}}</span>
+        </div>
+      </div>
+      <div ng-if="isActiveSettingsTab('PC')" class = "page-top-bar-right">
+        <label>{{'active.configuration' | translate}}</label>
+         <md-input-container>
+         <md-select data-ng-model="configurations.active" aria-label = "Active configuration" data-ng-change = "changeActiveConfiguration()">
+            <md-option data-ng-repeat="(index, configuration) in configurations.configurations" data-ng-value="index">
+              {{configuration.name + '.label' | translate}}
+            </md-option>
+          </md-select>
+         </md-input-container>
+      </div>
+    </div>
+
+    <md-tabs ng-if="isActiveSettingsTab('PC')" md-border-bottom class = "tabs-height">
+      <md-tab data-ng-repeat = "configuration in configurations.configurations" label="{{configuration.name + '.label' | translate}}"
+      ng-init ="formName = configuration.name + 'Form'">
+        <form name = "formName" class = "layout-full-height">
+        <md-content class="md-padding layout-full-height jpc-configuration ">
+		    <div class="panel-title">
+            <span class="panel-title-label">
+                  {{"jpc.configuration.label" | translate}}</span>
+        </div>
+
+        <md-input-container class="md-block" flex-gt-sm>
+           	<label>{{"controllerURL.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.rest.pdp_url']" name = "resourcePath"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.pdp_url'].includes('https')" >
+            <label>{{"client.authentication.label"| translate}}</label>
+            <md-select name="clientAuthentication" ng-model="configuration['nextlabs.pdp.https.client_authentication']" required>
+                <md-option value="no">{{'boolean.type.no.label' | translate}}</md-option>
+                <md-option value="yes">{{'boolean.type.yes.label' | translate}}</md-option>
+            </md-select>
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.https.client_authentication'] === 'yes' && configuration['nextlabs.pdp.rest.pdp_url'].includes('https')" >
+            <label>{{"client.authentication.privatekey.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.client.authentication.privatekey']" name = "privatekey" tooltip-trigger="mouseenter" tooltip-placement="bottom" required uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.https.client_authentication'] === 'yes' && configuration['nextlabs.pdp.rest.pdp_url'].includes('https')" >
+            <label>{{"client.authentication.publickey.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.client.authentication.publickey']" name = "publickey" tooltip-trigger="mouseenter" tooltip-placement="bottom" required uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.https.client_authentication'] === 'yes' && configuration['nextlabs.pdp.rest.pdp_url'].includes('https')" >
+            <label>{{"client.authentication.cakey.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.client.authentication.cakey']" name = "cakey" tooltip-trigger="mouseenter" tooltip-placement="bottom" uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm>
+           	<label>{{"authentication.type.label"| translate}}</label>
+            <md-select name="authType" ng-model="configuration['nextlabs.pdp.rest.auth_type']" required>
+                <md-option value="NONE">{{'NONE.label' | translate}}</md-option>
+                <md-option value="OAUTH2">{{'OAUTH2.label' | translate}}</md-option>
+            </md-select>
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2'" >
+            <label>{{"cc.ip.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.oauth2.ccip']" name = "ccIP"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2'" >
+            <label>{{"cc.port.label"| translate}}</label>
+            <input data-ng-model="configuration['nextlabs.pdp.oauth2.ccport']" name = "ccPort" ng-pattern="/^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$/" tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+
+            <div ng-messages="formName.ccPort.$error" role="alert" multiple >
+              <div ng-message="pattern">
+              	{{'cc.port.invalid'| translate}}
+              </div>
+            </div>
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2'" >
+            <label>{{"grant.type.label"| translate}}</label>
+            <md-select name="grantType" ng-model="configuration['nextlabs.pdp.oauth2.grant_type']" required>
+                <md-option value="password">{{'grant.type.password.label' | translate}}</md-option>
+                <md-option value="client_credentials">{{'grant.type.client.credentials.label' | translate}}</md-option>
+            </md-select>
+        </md-input-container>
+
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2' && configuration['nextlabs.pdp.oauth2.grant_type'] === 'password'" >
+            <label>{{"user.name.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.oauth2.username']" name = "oauth2Username"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2' && configuration['nextlabs.pdp.oauth2.grant_type'] === 'password'" >
+            <label>{{"password.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.oauth2.password']" name = "oauth2Password" type = "password"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2' && configuration['nextlabs.pdp.oauth2.grant_type'] === 'client_credentials'" >
+            <label>{{"user.name.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.oauth2.client_id']" name = "client_id"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm data-ng-if = "configuration['nextlabs.pdp.rest.auth_type'] === 'OAUTH2' && configuration['nextlabs.pdp.oauth2.grant_type'] === 'client_credentials'" >
+            <label>{{"password.label"| translate}}</label>
+            <input ng-model="configuration['nextlabs.pdp.oauth2.client_secret']" name = "client_secret" type = "password"
+                tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                uib-tooltip="{{'component.required.validation' | translate}}">
+        </md-input-container>
+
+        <md-button class="md-raised" data-ng-click="save(formName, configuration)"><i class="fa fa-save uppercase"></i>&nbsp;&nbsp;{{"save.label"| translate}}</md-button>
+        <md-button class="md-raised" data-ng-click="test(formName, configuration)"><i class="fa fa-check uppercase"></i>&nbsp;&nbsp;{{"test.label"| translate}}</md-button>
+	    </div>
+      </md-content>
+      </form>
+    </md-tab>
+  </md-tabs>
+
+  <div class="content-wrapper" style="height:calc(100vh - 96px); overflow: auto;" ng-if="isActiveSettingsTab('SA')">
+    <md-content class="md-padding" style="">
+      <div class = "attribute-panel">
+        <table class = "attribute-table">
+          <tr data-ng-repeat="(index, attribute) in subjectAttributes">
+          <td width = "80%"> <md-input-container class="md-block" flex-gt-sm>
+            <label>{{"key.label"| translate}}</label>
+            <input ng-model="attribute.key" name = "{{'subject-attribute-key' + index}}"
+            tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+            uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+          </td>
+          <td width = "17%"><md-input-container class="md-block" flex-gt-sm>
+            <label>{{"value.type.label"| translate}}</label>
+            <md-select name="{{'subject-attribute-value-type' + index}}" ng-model="attribute.type" required data-ng-change = "valueTypeChange(attribute)">
+              <md-option value="single">{{'single.value.label' | translate}}</md-option>
+              <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+            </md-select></md-input-container></td>
+          <td width="3%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteSubjectAttribute(index)" aria-label = "delete"><i
+            class="fa fa-trash-o icon-button"></i></md-button></td>
+          </tr>
+        </table>
+        <md-button class="md-raised" data-ng-click = "addSubjectAttribute()">
+          <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+        </md-button>
+        <md-button class="md-raised" data-ng-click="saveSubjectAttributes()"><i class="fa fa-save uppercase"></i>&nbsp;&nbsp;{{"save.label"| translate}}</md-button>
+      </div>
+
+
+    </md-content>
+  </div>
+
+  <div class="content-wrapper" style="height:calc(100vh - 96px); overflow: auto;" ng-if="isActiveSettingsTab('RA')">
+    <md-content class="md-padding" style="">
+      <div class = "attribute-panel">
+        <table class = "attribute-table">
+          <tr data-ng-repeat="(index, attribute) in resourceAttributes">
+          <td width = "80%"> <md-input-container class="md-block" flex-gt-sm>
+            <label>{{"key.label"| translate}}</label>
+            <input ng-model="attribute.key" name = "{{'resource-attribute-key' + index}}"
+            tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+            uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+          </td>
+          <td width = "17%"><md-input-container class="md-block" flex-gt-sm>
+            <label>{{"value.type.label"| translate}}</label>
+            <md-select name="{{'resource-attribute-value-type' + index}}" ng-model="attribute.type" required data-ng-change = "valueTypeChange(attribute)">
+              <md-option value="single">{{'single.value.label' | translate}}</md-option>
+              <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+            </md-select></md-input-container></td>
+          <td width="3%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteResourceAttribute(index)" aria-label = "delete"><i
+            class="fa fa-trash-o icon-button"></i></md-button></td>
+          </tr>
+        </table>
+        <md-button class="md-raised" data-ng-click = "addResourceAttribute()">
+          <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+        </md-button>
+        <md-button class="md-raised" data-ng-click="saveResourceAttributes()"><i class="fa fa-save uppercase"></i>&nbsp;&nbsp;{{"save.label"| translate}}</md-button>
+    </md-content>
+  </div>
+</md-content>
+</form>

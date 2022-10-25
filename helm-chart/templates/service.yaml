@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "policy-validator.fullname" . }}
+  labels:
+    {{- include "policy-validator.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: 8080
+    protocol: TCP
+    name: http-{{ .Release.Name }}-app
+  selector:
+    {{- include "policy-validator.selectorLabels" . | nindent 4 }}

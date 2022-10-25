@@ -1,0 +1,69 @@
+{
+    "configurations": [
+        {
+            "name": "development",
+            "nextlabs.pdp.rest.host": "jpc",
+            "nextlabs.pdp.rest.port": "58080",
+            "nextlabs.pdp.rest.https": "https",
+            "nextlabs.pdp.rest.auth_type": "OAUTH2",
+            "nextlabs.pdp.rest.resource_path": "/dpc/authorization/pdp",
+            "nextlabs.pdp.rest.pdp_url": "https://jpc:8443/dpc/authorization/pdp",
+            "nextlabs.pdp.https.client_authentication": "no",
+            "nextlabs.pdp.oauth2.ccip": "cc",
+            "nextlabs.pdp.oauth2.ccport": "4443",
+            "nextlabs.pdp.oauth2.grant_type": "client_credentials",
+            "nextlabs.pdp.oauth2.client_id": "apiclient",
+            "nextlabs.pdp.oauth2.client_secret": "client_secret",
+            "nextlabs.client.authentication.privatekey": "",
+            "nextlabs.client.authentication.publickey": "",
+            "nextlabs.client.authentication.cakey": ""
+        },
+        {
+            "name": "qa",
+            "nextlabs.pdp.rest.host": "jpc",
+            "nextlabs.pdp.rest.port": "58080",
+            "nextlabs.pdp.rest.https": "https",
+            "nextlabs.pdp.rest.auth_type": "OAUTH2",
+            "nextlabs.pdp.rest.resource_path": "dpc/authorization/pdp",
+            "nextlabs.pdp.rest.pdp_url": "https://jpc:8443/dpc/authorization/pdp",
+            "nextlabs.pdp.https.client_authentication": "no",
+            "nextlabs.client.authentication.privatekey": "",
+            "nextlabs.client.authentication.publickey": "",
+            "nextlabs.client.authentication.cakey": "",
+            "nextlabs.pdp.oauth2.ccip": "cc",
+            "nextlabs.pdp.oauth2.ccport": "4443",
+            "nextlabs.pdp.oauth2.grant_type": "client_credentials",
+            "nextlabs.pdp.oauth2.client_id": "apiclient",
+            "nextlabs.pdp.oauth2.client_secret": "client_secret"
+        },
+        {
+            "name": "production",
+            "nextlabs.pdp.rest.host": "${NEXTLABS_PV_PDP_HOST}",
+            "nextlabs.pdp.rest.port": "${NEXTLABS_PV_PDP_PORT}",
+            "nextlabs.pdp.rest.https": "${NEXTLABS_PV_PDP_PROTOCOL}",
+            "nextlabs.pdp.rest.auth_type": "OAUTH2",
+            "nextlabs.pdp.rest.resource_path": "/dpc/authorization/pdp",
+            "nextlabs.pdp.rest.pdp_url": "${NEXTLABS_PV_PDP_PROTOCOL}://${NEXTLABS_PV_PDP_HOST}:${NEXTLABS_PV_PDP_PORT}/dpc/authorization/pdp",
+            "nextlabs.pdp.https.client_authentication": "no",
+            "nextlabs.client.authentication.privatekey": "",
+            "nextlabs.client.authentication.publickey": "",
+            "nextlabs.client.authentication.cakey": "",
+            "nextlabs.pdp.oauth2.ccip": "${NEXTLABS_PV_CC_HOST}",
+            "nextlabs.pdp.oauth2.ccport": "${NEXTLABS_PV_CC_PORT}",
+            "nextlabs.pdp.oauth2.grant_type": "client_credentials",
+            "nextlabs.pdp.oauth2.client_id": "apiclient",
+            "nextlabs.pdp.oauth2.client_secret": "client_secret"
+        }
+    ],
+    "active": 0,
+    "port": 8443,
+    "protocol": "HTTPS",
+    "url": "https://<policy-validator-domain-name>:8443/policy-validator",
+    "ccUrl": "https://<control-center-domain-name>",
+    "oidc": {
+        "clientId": "ControlCenterOIDCClient",
+        "clientSecret": "policyvalidatorclientsecret",
+        "tokenUrl": ""
+    },
+    "healthCheckPort": 8888
+}

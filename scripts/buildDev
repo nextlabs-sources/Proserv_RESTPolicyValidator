@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# DESCRIPTION
+#	Invoke developer build
+#
+# USAGE:
+#	Steps to invoke this script.
+#		export TARGET=<path>
+#		export BUILD_NUMBER=<#>
+#
+
+#
+# Compile
+#
+export TARGET=DEV
+export SDRIVE=/mnt/hgfs/nxt-build/
+export NLEXTERNALDIR2=/mnt/hgfs/nxt-build/build/P4/source_main_external/
+export WORKSPACE=/home/nextlabs/git/restpolicyvalidator
+export BUILD_NUMBER=881
+export ACTION=BUILD
+export BUILD_TYPE=pcv
+export IMAGE_TAG=2021.07
+export REGISTRY=ALL
+
+./createzip.sh

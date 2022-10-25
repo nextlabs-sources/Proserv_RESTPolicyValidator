@@ -1,0 +1,660 @@
+<form id = "request-form" name = "requestForm" novalidate = "">
+<div class = "layout-full-height">
+  <md-content class = "layout-full-height" id = "test-case-content">
+    <div class = "page-top-bar" data-ng-if="current.currentTestSet.children && current.currentTestSet.children.length > 0">
+      <div class = "page-top-bar-left">
+        <div class = "page-title" uib-tooltip="{{current.currentTestCase.title}}" tooltip-placement = "bottom-left">
+          <span>{{current.currentTestCase.title}}</span>
+        </div>
+      </div>
+
+      <div class = "page-top-bar-right">
+        <span data-uib-dropdown dropdown-append-to-body data-ng-if = "onDesign" uib-tooltip="{{'add.category.label' | translate}}" tooltip-placement = "left">
+          <button class="md-button md-accent md-ink-ripple inline-block" id="category-drop-down"
+            type="button" data-uib-dropdown-toggle ng-disabled="disabled" ><i class="fa fa-plus icon-button"></i>&nbsp;&nbsp;{{"category.label"
+          | translate}}
+           </span>
+          </button>
+          <ul class="uib-dropdown-menu dropdown-menu dropdown-menu-right" role="menu"
+            aria-labelledby="">
+            <li role="menuitem" data-ng-repeat="category in allCategories"
+              data-ng-click="addCategory(category)" data-ng-if = "!categories.get(category)"
+              class="clickable-dropdown">{{category.toLowerCase() + '.label' | translate}}</li>
+          </ul>
+        </span>
+        <md-button class = "md-accent inline-block" data-ng-click = "validateRawRequest()" data-ng-if = "!onDesign" aria-label="save"
+          uib-tooltip="{{'validate.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-check icon-button"></i>&nbsp;&nbsp;{{"validate.label"| translate}}</md-button>
+        <md-button class = "md-accent inline-block" data-ng-click = "saveTestCase(requestForm)" aria-label="save" style = "color: cyan"
+          uib-tooltip="{{'save.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-save icon-button"></i>&nbsp;&nbsp;{{"save.label"| translate}}</md-button>
+        <md-button class="md-accent inline-block" data-ng-click="evaluate()" aria-label = "Evaluate"
+          style = "color: #666666"><i class="fa fa-play uppercase"></i>&nbsp;&nbsp;{{"run.label"
+          | translate}}</md-button>
+
+
+      </div>
+    </div>
+
+   	<md-tabs md-border-bottom class = "tabs-height" data-ng-if = "rendered" md-selected = "testCaseTab.selected">
+      <md-tab label="{{'request.interface.label' | translate}}" md-on-select = "designRequest()" md-active = "!jsonActive" md-on-deselect = "deselectDesignRequest()">
+        <md-content class="md-padding layout-full-height">
+            <div id = "expected-result-panel" style="flex-direction">
+                <span class = "inline-block" style = "margin-right:20px, ;font-weight: bold; font-size: 15px">{{'expected.result.label'|translate}}:</span>
+                <!-- <span class = "inline-block">{{'allow.label'|translate}}  </span> -->
+                <!-- <md-switch class = "md-warn inline-block"
+                  data-ng-model="deny" data-ng-change = "onExpectedResultChange(deny)">{{'deny.label'|translate}}</md-switch> -->
+
+                  <md-radio-group data-ng-model="expectedResult.data" style="flex-direction: row; display: flex;">
+                    <md-radio-button type="radio" data-ng-value="'allow'">Allow</md-radio-button>
+                    <md-radio-button type="radio" data-ng-value="'deny'">Deny</md-radio-button>
+                    <md-radio-button type="radio" data-ng-value="'notapplicable'">Not Applicable</md-radio-button>
+                  </md-radio-group>
+            </div>
+
+            <div id = "description" class = "category-panel" style = "margin-top: 30px">
+              <div class = "text-area-input">
+                <div class="panel-title">
+                  <span class="panel-title-label">
+                    {{"description.label" | translate}}</span>
+                </div>
+                <textarea id="description" rows = "3" maxlength = "255"
+                  data-ng-model="extra.description" name="description"></textarea>
+              </div>
+            </div>
+
+
+            <div id = "subject" class = "category-panel" style = "margin-top: 30px">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"subject.label" | translate}}</span>
+              </div>
+
+              <md-input-container class="md-block" flex-gt-sm>
+                <label>{{"subject.id.label"| translate}}</label>
+                <input ng-model="categories.get('Subject')[0].attributes[0].value" name = "subject-id"
+                  tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                  uib-tooltip="{{'component.required.validation' | translate}}">
+              </md-input-container>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('Subject')[0].attributes.length > 1" class = "attribute-table">
+                  <th colspan = "4">{{"subject.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('Subject')[0].attributes | limitTo: (1 - categories.get('Subject')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label><i ng-if="!subjectAttributesContains(attribute.attributeId)" class="fa fa-exclamation-triangle" style="color:#FF6101;padding-right:2px;"></i>{{"key.label"| translate}}</label>
+                    <md-select uib-tooltip="{{ subjectAttributesContains(attribute.attributeId) ? '' : 'This attribute has been changed or modified' }}" tooltip-trigger="mouseenter" tooltip-placement="bottom" name="{{'subject-attribute-value-type' + index}}" ng-model="attribute.attributeId" required>
+                      <md-option ng-click="valueKeyChange(attribute,attrib)" ng-repeat="(index, attrib) in subjectAttributes" value="{{attrib.key}}">{{ attrib.key }}</md-option>
+                      <md-option ng-click="valueKeyChange(attribute,{key:attribute.attributeId, type:attribute.valueType})" ng-if="!subjectAttributesContains(attribute.attributeId)" value="{{attribute.attributeId}}">{{ attribute.attributeId }}</md-option>
+                    </md-select></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'subject-attribute-value-type' + index}}" ng-model="attribute.valueType" data-ng-disabled="true" required>
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'subject-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                      md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('Subject')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('Subject')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+
+            </div>
+
+            <div id = "action" class = "category-panel">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"action.label" | translate}}</span>
+              </div>
+              <md-input-container class="md-block" flex-gt-sm>
+                <label>{{"action.name.label"| translate}}</label>
+                <input ng-model="categories.get('Action')[0].attributes[0].value" name = "action-id"
+                  tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                  uib-tooltip="{{'component.required.validation' | translate}}">
+              </md-input-container>
+            </div>
+
+            <div id = "from-resource" class = "category-panel">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"from.resource.label" | translate}}</span>
+              </div>
+
+              <div layout-gt-sm="row" style = "width: 80%">
+                <md-input-container class="md-block" flex-gt-sm data-ng-show = "false">
+                  <label>{{"resource.dimension.label"| translate}}</label>
+                  <input ng-model="categories.get('From Resource')[0].attributes[2].value" name = "resource-dimension"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" disabled
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>{{"resource.name.label"| translate}}</label>
+                  <input ng-model="categories.get('From Resource')[0].attributes[0].value" name = "resource-id"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>{{"resource.type.label"| translate}}</label>
+                  <input ng-model="categories.get('From Resource')[0].attributes[1].value" name = "resource-type"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+              </div>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('From Resource')[0].attributes.length > 4" class = "attribute-table">
+                  <th colspan = "4">{{"resource.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('From Resource')[0].attributes | limitTo: (4 - categories.get('From Resource')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label><i ng-if="!resourceAttributesContains(attribute.attributeId)" class="fa fa-exclamation-triangle" style="color:#FF6101;padding-right:2px;"></i>{{"key.label"| translate}}</label>
+                    <md-select name="{{'resource-attribute-key' + index}}" ng-model="attribute.attributeId" required>
+                      <md-option ng-click="valueKeyChange(attribute,attrib)" ng-repeat="(index, attrib) in resourceAttributes" value="{{ attrib.key }}">{{ attrib.key }}</md-option>
+                    </md-select></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select uib-tooltip="{{ resourceAttributesContains(attribute.attributeId) ? '' : 'This attribute has been changed or modified' }}" tooltip-trigger="mouseenter" tooltip-placement="bottom" name="{{'from-resource-attribute-value-type' + index}}" ng-model="attribute.valueType" data-ng-disabled="true" required data-ng-change = "valueTypeChange(attribute)">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'from-resource-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('From Resource')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('From Resource')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "to-resource" class = "category-panel" data-ng-if = "categories.get('To Resource')[0]">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"to.resource.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category" data-ng-click = "removeCategory('To Resource')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <div layout-gt-sm="row" style = "width: 80%">
+                <md-input-container class="md-block" flex-gt-sm  data-ng-show = "false">
+                  <label>{{"resource.dimension.label"| translate}}</label>
+                  <input ng-model="categories.get('To Resource')[0].attributes[2].value" name = "resource-dimension"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" disabled
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>{{"resource.name.label"| translate}}</label>
+                  <input ng-model="categories.get('To Resource')[0].attributes[0].value" name = "resource-id"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>{{"resource.type.label"| translate}}</label>
+                  <input ng-model="categories.get('To Resource')[0].attributes[1].value" name = "resource-type"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}">
+                </md-input-container>
+              </div>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('To Resource')[0].attributes.length > 4" class = "attribute-table">
+                  <th colspan = "4">{{"resource.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('To Resource')[0].attributes | limitTo: (4 - categories.get('To Resource')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label><i ng-if="!resourceAttributesContains(attribute.attributeId)" class="fa fa-exclamation-triangle" style="color:#FF6101;padding-right:2px;"></i>{{"key.label"| translate}}</label>
+                    <md-select name="{{'to-resource-attribute-key' + index}}" ng-model="attribute.attributeId" required>
+                      <md-option ng-click="valueKeyChange(attribute,attrib)" ng-repeat="(index, attrib) in resourceAttributes" value="{{ attrib.key }}">{{ attrib.key }}</md-option>
+                    </md-select></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'to-resource-attribute-value-type' + index}}" ng-model="attribute.valueType" required ng-disabled="true">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'to-resource-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('To Resource')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('To Resource')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "application" class = "category-panel">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"application.label" | translate}}</span>
+              </div>
+              <md-input-container class="md-block" flex-gt-sm>
+                <label>{{"application.name.label"| translate}}</label>
+                <input ng-model="categories.get('Application')[0].attributes[0].value" name = "application-id"
+                  tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                  uib-tooltip="{{'component.required.validation' | translate}}">
+              </md-input-container>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('Application')[0].attributes.length > 1" class = "attribute-table">
+                  <th colspan = "4">{{"application.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('Application')[0].attributes | limitTo: (1 - categories.get('Application')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"key.label"| translate}}</label>
+                    <input ng-model="attribute.attributeId" name = "{{'application-attribute-key' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'application-attribute-value-type' + index}}" ng-model="attribute.valueType" required data-ng-change = "valueTypeChange(attribute)">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'application-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('Application')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('Application')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "host" class = "category-panel" data-ng-if = "categories.get('Host')[0]">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"host.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category" data-ng-click = "removeCategory('Host')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <md-input-container class="md-block" flex-gt-sm>
+                <label>{{"host.name.label"| translate}}</label>
+                <input data-ng-model="categories.get('Host')[0].attributes[0].value" name = "host-id"
+                  tooltip-trigger="mouseenter" tooltip-placement="bottom" required data-ng-blur = "recheckHost(0)"
+                  uib-tooltip="{{'component.required.validation' | translate}}">
+              </md-input-container>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('Host')[0].attributes.length > 1" class = "attribute-table">
+                  <th colspan = "4">{{"host.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('Host')[0].attributes | limitTo: (1 - categories.get('Host')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"key.label"| translate}}</label>
+                    <input ng-model="attribute.attributeId" name = "{{'host-attribute-key' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'host-attribute-value-type' + index}}" ng-model="attribute.valueType" required data-ng-change = "valueTypeChange(attribute)">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'host-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('Host')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('Host')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "recipient" class = "category-panel" data-ng-if = "categories.get('Recipient')[0]">
+              <div class="panel-title">
+                <span class="panel-title-label">
+                  {{"recipient.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category" data-ng-click = "removeCategory('Recipient')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <md-radio-group data-ng-model="categories.get('Recipient')[0].attributes[0].attributeId" data-ng-change= "changeRecipientMode(0)">
+                <md-radio-button value="id">{{'recipient.mode.id' | translate}}</md-radio-button>
+                <md-radio-button value="email">{{'recipient.mode.email' | translate}}</md-radio-button>
+              </md-radio-group>
+
+              <div style = "height: 10px"></div>
+
+              <md-input-container class="md-block" flex-gt-sm data-ng-if = "categories.get('Recipient')[0].attributes[0].attributeId == 'id'">
+                <label>{{"recipient.id.label"| translate}}</label>
+                <input data-ng-model="categories.get('Recipient')[0].attributes[0].value" name = "recipient-id"
+                  tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                  uib-tooltip="{{'component.required.validation' | translate}}">
+              </md-input-container>
+
+              <md-input-container class="md-block big-chips" flex-gt-sm data-ng-if = "categories.get('Recipient')[0].attributes[0].attributeId == 'email'">
+                <label>{{"recipient.emails.label"| translate}}</label>
+                <md-chips data-ng-model="categories.get('Recipient')[0].attributes[0].value" readonly="false" md-removable="true" md-enable-chip-edit="false"
+                md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  <input type="email">
+                </md-chips>
+              </md-input-container>
+
+              <div class = "attribute-panel" data-ng-if = "categories.get('Recipient')[0].attributes[0].attributeId == 'id'">
+                <table data-ng-if = "categories.get('Recipient')[0].attributes.length > 1" class = "attribute-table">
+                  <th colspan = "4">{{"recipient.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('Recipient')[0].attributes | limitTo: (1 - categories.get('Recipient')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label><i ng-if="!subjectAttributesContains(attribute.attributeId)" class="fa fa-exclamation-triangle" style="color:#FF6101;padding-right:2px;"></i>{{"key.label"| translate}}</label>
+                    <md-select uib-tooltip="{{ subjectAttributesContains(attribute.attributeId) ? '' : 'This attribute has been changed or modified' }}" tooltip-trigger="mouseenter" tooltip-placement="bottom" name="{{'recipient-attribute-key' + index}}" ng-model="attribute.attributeId" required>
+                      <md-option ng-click="valueKeyChange(attribute,attrib)" ng-repeat="(index, attrib) in subjectAttributes" value="{{attrib.key}}">{{ attrib.key }}</md-option>
+                      <md-option ng-click="valueKeyChange(attribute,{key:attribute.attributeId, type:attribute.valueType})" ng-if="!subjectAttributesContains(attribute.attributeId)" value="{{attribute.attributeId}}">{{ attribute.attributeId }}</md-option>
+                    </md-select></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'recipient-attribute-value-type' + index}}" ng-model="attribute.valueType" required data-ng-change = "valueTypeChange(attribute)">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'recipient-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('Recipient')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('Recipient')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "Environment" class = "category-panel" data-ng-if = "categories.get('Environment')[0]">
+              <div class="panel-title" style = "margin-bottom: 20px">
+                <span class="panel-title-label">
+                  {{"environment.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category-environment" data-ng-click = "removeCategory('Environment')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <div class = "attribute-panel">
+                <table data-ng-if = "categories.get('Environment')[0].attributes.length > 0" class = "attribute-table">
+                  <th colspan = "4">{{"environment.label" | translate}} {{"attribute.label" | translate}}</th>
+                  <tr
+                  data-ng-repeat="(index, attribute) in categories.get('Environment')[0].attributes | limitTo: (0 - categories.get('Environment')[0].attributes.length)">
+                  <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"key.label"| translate}}</label>
+                    <input ng-model="attribute.attributeId" name = "{{'environment-attribute-key' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+                  </td>
+                  <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                    <label>{{"value.type.label"| translate}}</label>
+                      <md-select name="{{'environment-attribute-value-type' + index}}" ng-model="attribute.valueType" required data-ng-change = "valueTypeChange(attribute)">
+                        <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                        <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                      </md-select></md-input-container></td>
+                  <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                    <label>{{"value.label"| translate}}</label>
+                    <input ng-model="attribute.value" name = "{{'environment-attribute-value' + index}}"
+                    tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                    uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                    <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                    md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                  </td>
+                  <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(categories.get('Environment')[0], index)" aria-label = "delete"><i
+                    class="fa fa-trash-o icon-button"></i></md-button></td>
+                  </tr>
+                </table>
+                <md-button class="" data-ng-click = "addAttribute(categories.get('Environment')[0])">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                </md-button>
+              </div>
+            </div>
+
+            <div id = "discretionarypolicies" class = "category-panel" data-ng-if = "categories.get('DiscretionaryPolicies')[0]">
+              <div class="panel-title" style = "margin-bottom: 20px">
+                <span class="panel-title-label">
+                  {{"discretionarypolicies.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category-environment" data-ng-click = "removeCategory('DiscretionaryPolicies')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <div class = "text-area-input">
+                <label>{{"policies.label"| translate}}</label>
+                <textarea id="policies-text" rows = "7"
+                  data-ng-model="categories.get('DiscretionaryPolicies')[0].attributes[0].value" name="policies-text"></textarea>
+              </div>
+
+              <md-input-container class="md-block" flex-gt-sm style = "width: 30%">
+                <label>{{"pod.ignore.built.in.label" | translate}}</label>
+                <md-select name="{{'pod-build-in-ignore'}}" ng-model="categories.get('DiscretionaryPolicies')[0].attributes[1].value" required>
+                  <md-option value="true">{{'true.label' | translate}}</md-option>
+                  <md-option value="false">{{'false.label' | translate}}</md-option>
+                </md-select></md-input-container></td>
+              </md-input-container>
+            </div>
+
+            <div id = "namedattribute" class = "category-panel" data-ng-if = "categories.get('NamedAttribute')">
+              <div class="panel-title" style = "margin-bottom: 20px">
+                <span class="panel-title-label">
+                  {{"namedattribute.label" | translate}}</span>
+              </div>
+
+              <md-button class = "remove-category-environment" data-ng-click = "removeCategory('NamedAttribute')" aria-label = "delete">
+                  <i class="fa fa-trash-o icon-button"></i></md-button>
+
+              <md-content flex data-ng-repeat = "(i,nattr) in categories.get('NamedAttribute')" class = "sub-category-panel">
+                <div class = "sub-category-title">
+                  <span>{{getNamedAttributeName(nattr)}}</span>
+                </div>
+                <md-button class = "remove-sub-category" data-ng-click = "removeNamedAttribute(i)" aria-label = "delete">
+                  <i class="fa fa-trash icon-button"></i>
+                </md-button>
+
+                <div class = "attribute-panel">
+                  <table data-ng-if = "nattr.attributes.length > 0" class = "attribute-table">
+                    <th colspan = "4">{{"attribute.label" | translate}}</th>
+                    <tr
+                    data-ng-repeat="(index, attribute) in nattr.attributes | limitTo: (0 - nattr.attributes.length)">
+                    <td width = "30%"> <md-input-container class="md-block" flex-gt-sm>
+                      <label>{{"key.label"| translate}}</label>
+                      <input ng-model="attribute.attributeId" name = "{{'namedattribute-attribute-key' + i + '' + index}}"
+                      tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                      uib-tooltip="{{'component.required.validation' | translate}}"></md-input-containter>
+                    </td>
+                    <td width = "10%"><md-input-container class="md-block" flex-gt-sm>
+                      <label>{{"value.type.label"| translate}}</label>
+                        <md-select name="{{'namedattribute-attribute-value-type' + i + '' +  index}}" ng-model="attribute.valueType" required data-ng-change = "valueTypeChange(attribute)">
+                          <md-option value="single">{{'single.value.label' | translate}}</md-option>
+                          <md-option value="multi">{{'multi.value.label' | translate}}</md-option>
+                        </md-select></md-input-container></td>
+                    <td width = "45%"><md-input-container class="md-block" flex-gt-sm data-ng-if = "attribute.valueType == 'single'">
+                     <label>{{"value.label"| translate}}</label>
+                      <input ng-model="attribute.value" name = "{{'namedattribute-attribute-value' + i + '' + index}}"
+                      tooltip-trigger="mouseenter" tooltip-placement="bottom" required
+                      uib-tooltip="{{'component.required.validation' | translate}}"></md-input-container>
+                      <md-chips data-ng-model="attribute.value" readonly="false" md-removable="true" data-ng-if = "attribute.valueType == 'multi'" md-enable-chip-edit="true"
+                      md-add-on-blur="true" md-separator-keys = "chipSeparators">
+                    </td>
+                    <td width="5%"><md-button class = "md-icon-button md-primary" data-ng-click = "deleteAttribute(nattr, index)" aria-label = "delete"><i
+                      class="fa fa-trash-o icon-button"></i></md-button></td>
+                    </tr>
+                 </table>
+                  <md-button class="" data-ng-click = "addAttribute(nattr)">
+                    <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"attribute.label" | translate}}
+                  </md-button>
+                </div>
+              </md-content>
+              <md-button class="" data-ng-click = "addNamedAttribute()">
+                  <i class="fa fa-plus uppercase" ></i>&nbsp;&nbsp;{{"namedattribute.label" | translate}}
+              </md-button>
+            </div>
+            <div style = "height: 50px"></div>
+
+        </md-content>
+      </md-tab>
+      <md-tab label="{{'json.payload.label' | translate}}" md-on-select = "jsonRequest()" class = "layout-full-height" md-on-deselect = "deselectJsonRequest()" md-active = "jsonActive">
+        <md-content class="layout-full-height" data-ng-if = "!onDesign">
+          <div ng-jsoneditor="onTestCaseEditorLoad" data-ng-model="raw.request" options="raw.options" class = "json-editor" data-ng-if = "jsonEditRendered"></div>
+        </md-content>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+  <!--<div id = "test-case-toolbar" class = "layout-full-height">
+
+    <div data-uib-dropdown dropdown-append-to-body data-ng-if = "onDesign" uib-tooltip="{{'add.category.label' | translate}}" tooltip-placement = "left">
+      <button class="toolbar-button md-ink-ripple" id="category-drop-down"
+        type="button" data-uib-dropdown-toggle ng-disabled="disabled" >
+           <i class="fa fa-plus icon-button"></i></span>
+      </button>
+      <ul class="uib-dropdown-menu dropdown-menu dropdown-menu-right" role="menu"
+          aria-labelledby="">
+        <li role="menuitem" data-ng-repeat="category in allCategories"
+          data-ng-click="addCategory(category)" data-ng-if = "!categories.get(category)"
+          class="clickable-dropdown">{{category.toLowerCase() + '.label' | translate}}</li>
+      </ul>
+    </div>
+
+
+
+    <div style = "position:absolute;bottom: 10px">
+      <md-button class = "md-icon-button md-raised" data-ng-click = "validateRawRequest()" data-ng-if = "!onDesign" aria-label="save" style = "color: lightgreen"
+      uib-tooltip="{{'validate.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-check icon-button"></i></md-button>
+      <md-button class = "md-icon-button md-raised" data-ng-click = "saveTestCase(requestForm)" aria-label="save" style = "color: cyan"
+      uib-tooltip="{{'save.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-save icon-button"></i></md-button>
+      <md-button class = "md-icon-button md-raised" data-ng-click = "deleteTestCase($event)" aria-label="delete" style = "color: #f45a5a"
+      uib-tooltip="{{'delete.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-trash-o icon-button"></i></md-button>
+      <md-button class = "md-icon-button md-raised" data-ng-click = "evaluate()" aria-label="send" style = "color: rgb(255,152,0)"
+       uib-tooltip="{{'send.label' | translate}}" tooltip-placement = "left"><i
+          class="fa fa-send icon-button"></i></md-button>
+    </div>
+  </div>-->
+
+  <md-sidenav class="side-panel md-sidenav-right response-interface" md-component-id="result-panel"  md-disable-backdrop>
+    <md-button class="md-icon-button md-raised close-button"
+      data-ng-click="closeResult()" aria-label="close"> <i
+      class="fa fa-close icon-button"></i></md-button>
+    <p class = "header">{{'evaluation.label' | translate}} {{'result.label' | translate}}</p>
+    <p class = "title">{{current.currentTestCase.title}}</p>
+    <div data-ng-class="response.status + '-class'" class = "status">
+            {{response.status}} <p>{{'time.taken.label' | translate}} : {{response.time}}ms</p></div>
+    <table>
+        <tr>
+          <td style = "width: 10%" class="label-column"><span>{{'decision.label'
+              | translate}}</span></td>
+          <td style = "width:90%;text-align:left"><span class="allow-class"
+            data-ng-if="resObj.Decision === 'Permit'">{{'allow.label'
+              | translate}}</span> <span class="deny-class"
+            data-ng-if="resObj.Decision === 'Deny'">{{'deny.label'
+              | translate}}</span> <span class="indeterminate-class"
+            data-ng-if="resObj.Decision === 'Indeterminate'">{{'indeterminate.label'
+              | translate}}</span> <span class="notapplicable-class"
+            data-ng-if="resObj.Decision === 'NotApplicable'">{{'not.applicable.label'
+              | translate}}</span>
+            </td>
+        </tr>
+        <tr>
+          <td  style = "width: 10%"class="label-column"><span>{{'message.label'
+              | translate}}</span></td>
+          <td style = "width:90%;text-align:left"><span class="message">{{resObj.Status.StatusMessage}}</span></td>
+        </tr>
+        <tr data-ng-if="resObj.Obligations.length == 0">
+          <td colspan="2"><span>{{'empty.obligations' |
+              translate}}</span></td>
+        </tr>
+        <tr data-ng-if="resObj.Obligations.length > 0">
+          <td width="100%" class="label-column" colspan = "2"><span>{{'obligations.label'
+              | translate}}</span></td>
+        </tr>
+        <tr>
+          <td width="100%" colspan = "2">
+            <div
+              data-ng-repeat="(index, obligation) in resObj.Obligations"
+              class="obligation-block">
+              <div class="obligation-name-block">
+                <div
+                  style="color: #EEEEEE; background: #777777; padding: 5px 10px 5px 10px">{{'name.label'
+                  | translate}}</div>
+                <label style="padding: 5px 5px" uib-tooltip="{{obligation.Id}}"
+      tooltip-placement="bottom">{{obligation.Id}}</label>
+              </div>
+              <table class="attribute-table">
+                <tr>
+                  <td style="color: #EEEEEE; background: #777777;">{{'attribute.label'
+                    | translate}}</td>
+                  <td style="color: #EEEEEE; background: #777777;">{{'value.label'
+                    | translate}}</td>
+                </tr>
+                <tr
+                  data-ng-repeat="(index, attribute) in obligation.AttributeAssignment">
+                  <td width="20%" style="color: #666666">{{attribute.AttributeId}}</td>
+                  <td><span data-ng-repeat="value in attribute.Value">{{value}}</td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </md-sidenav>
+</div>
+</form>

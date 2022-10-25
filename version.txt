@@ -1,0 +1,3 @@
+# NextLabs Policy Validator
+nextlabs.policy-validator.version=2021.07
+nextlabs.policy-validator.build=0

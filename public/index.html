@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<!-- If IE use the latest rendering engine -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link href="ui/lib/bootstrap/3.3.5/css/bootstrap.min.css"
+	rel="stylesheet">
+<link href="ui/lib/jquery-ui/1.11.0/jquery-ui.min.css" rel="stylesheet">
+<link href="ui/lib/jquery-ui/1.11.0/theme.css" rel="stylesheet">
+<link href="ui/lib/font-awesome/4.4.0/css/font-awesome.min.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-ui-switch/angular-ui-switch.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-material/1.0.0/angular-material.min.css"
+	rel="stylesheet">
+<link href="ui/lib/ng-tags-input/3.0/ng-tags-input.min.css"
+	rel="stylesheet">
+<link href="ui/lib/ng-tags-input/3.0/ng-tags-input.bootstrap.min.css"
+	rel="stylesheet">
+<link href="ui/lib/angular-ui-layout/ui-layout.css" rel="stylesheet">
+<link href="ui/lib/jsoneditor/jsoneditor.min.css" rel="stylesheet">
+<link href="ui/css/style.css" rel="stylesheet">
+<link href="ui/css/font/fira.css" rel="stylesheet">
+<link href="nxce.ico" rel="shortcut icon" type="image/x-icon" />
+<script type="text/javascript" src="ui/config/config.js"></script>
+<title>Rest API Validator</title>
+</head>
+
+<body data-ng-app="mainApp" data-ng-controller = "appController">
+	<div class="vd-header" ng-cloak>
+			<div class="vd-header-logo inline-block"></div>
+			<div class="vd-header-name inline-block">
+				<a href="#/index.html">{{'policy.validator.label'|
+					translate}}</a>
+			</div>
+			<div class="header-user-profile inline-block" data-ng-mouseenter="showUserProfile.val= !showUserProfile.val" data-ng-click="showUserProfile.val= !showUserProfile.val" data-ng-mouseleave="showUserProfile.val = false;">
+				<p>{{user.username}}</p>
+				<i class="fa fa-angle-down"></i>
+				<div class="user-profile-div"  data-ng-show="showUserProfile.val"  data-ng-mouseenter="showUserProfile.val=true">
+					<div class="arrow-up"></div>
+					<div class="content">
+						<div class="middle">
+							<a href="/policy-validator/logout" class="form-control btn btn-default logout-btn" data-ng-mouseenter="showUserProfile.val=true">
+								{{'LOGOUT'|translate}}
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+	<div ui-layout = "{flow: 'column', disableToggle: true, dividerSize: 0}" class = "ui-layout-row" id = "main-layout" ng-cloak ui-layout-loaded>
+		<div ui-layout-container class = "stretch ui-layout-container" size = "20%" id = "navi-layout" style = "overflow-y:auto; overflow-x: visible">
+			<div class="menu-new">
+				<md-button class="inline-block" data-ng-click="goHome()" data-ng-class = "{'button-selected': current.currentTab === 'Home'}" aria-label="Home" uib-tooltip="Home" tooltip-placement="bottom">
+				<i class="fa fa-home uppercase" ></i></md-button>
+				<md-button class="inline-block" data-ng-click="settings()" data-ng-class = "{'button-selected': current.currentTab === 'Settings'}" aria-label="Settings" uib-tooltip="Settings" tooltip-placement="bottom">
+				<i class="fa fa-gear uppercase"></i></md-button>
+				<md-button class="inline-block" data-ng-click="error()" data-ng-class = "{'button-selected': current.currentTab === 'Error'}" aria-label="Error" uib-tooltip="Errors" tooltip-placement="bottom">
+				<i class="fa fa-exclamation-circle uppercase"></i></md-button>
+
+			</div>
+			<div data-ng-class="">
+					<div class="layout-full-height" data-ng-cloak
+						ng-include="'./ui/app/templates/menu.html'"
+						style="overflow-y: auto; overflow-x: hidden"></div>
+			</div>
+		</div>
+		<div ui-layout-container class = "stretch ui-layout-container" style = "border-left:2px solid #DDDDDD">
+			<div ui-layout = "{flow: 'row', disableToggle: true, dividerSize: 0}" ui-layout-loaded id = "right-layout">
+				<div ui-layout-container id = "content">
+					<div class="view-content">
+						<div class = "layout-full-height" data-ng-class="transition"
+							data-ng-cloak ui-view></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div data-http-loader class="data-loading" data-ng-if = "!response.testSetNotMultiRequest">
+		<!-- <p style="text-align: center" class="sc-vertical-middle-div">Loading...</p> -->
+		<div layout="row" layout-sm="column" layout-align="space-around"
+			class="vertical-middle-div">
+			<md-progress-circular md-mode="indeterminate" md-diameter="120px"></md-progress-circular>
+		</div>
+	</div>
+
+	<div data-http-loader class="data-loading1" data-ng-if = "response.testSetNotMultiRequest">
+		<!-- <p style="text-align: center" class="sc-vertical-middle-div">Loading...</p> -->
+		<div layout="row" layout-sm="column" layout-align="space-around"
+			class="vertical-middle-div">
+			<md-progress-circular md-mode="indeterminate" md-diameter="50px"></md-progress-circular>
+		</div>
+	</div>
+
+
+
+	<script type="text/javascript" src="ui/lib/jquery/1.8.2/jquery.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/jquery-ui/1.11.0/jquery-ui.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-aria.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-sanitize.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-animate.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular/1.4.7/angular-messages.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui/bootstrap/ui-bootstrap-tpls-0.14.3.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui/angular-ui-numeric.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-switch/angular-ui-switch.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-translate/2.8.1/angular-translate.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-material/1.0.0/angular-material.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-translate/angular-translate-loader-static-files.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-input-mask/angular-input-masks-standalone.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/angular-ui-layout/ui-layout.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/jsoneditor/jsoneditor.min.js"></script>
+	<script type="text/javascript"
+		src="ui/lib/ng-jsoneditor/ng-jsoneditor.min.js"></script>
+
+	<script type="text/javascript" src="ui/app/app.js"></script>
+
+	<script type="text/javascript" src="ui/app/services/categoryService.js"></script>
+	<script type="text/javascript" src="ui/app/services/generalService.js"></script>
+	<script type="text/javascript" src="ui/app/services/loggerService.js"></script>
+	<script type="text/javascript" src="ui/app/services/networkService.js"></script>
+	<script type="text/javascript" src="ui/app/services/configService.js"></script>
+	<script type="text/javascript" src="ui/app/services/sharedService.js"></script>
+	<script type="text/javascript" src="ui/app/services/dialogService.js"></script>
+	<script type="text/javascript" src="ui/app/services/toastService.js"></script>
+	<script type="text/javascript" src="ui/app/services/evaluateService.js"></script>
+	<script type="text/javascript"
+		src="ui/app/services/statusCodeService.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestSet/services/testSetServices.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestCase/services/testCaseServices.js"></script>
+	<script type="text/javascript"
+		src="ui/app/Overview/services/overviewServices.js"></script>
+	<script type="text/javascript"
+		src="ui/app/Error/services/errorService.js"></script>
+
+
+	<script type="text/javascript"
+		src="ui/app/Overview/overviewController.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestSet/testSetController.js"></script>
+	<script type="text/javascript"
+		src="ui/app/TestCase/testCaseController.js"></script>
+	<script type="text/javascript"
+		src="ui/app/Error/errorController.js"></script>
+	<script type="text/javascript"
+		src="ui/app/Home/homeController.js"></script>
+
+	<script type="text/javascript" src="ui/app/appController.js"></script>
+	<script type="text/javascript" src="ui/app/directives/httpLoader.js"></script>
+	<script type="text/javascript" src="ui/app/directives/multiParam.js"></script>
+</body>
+
+</html>

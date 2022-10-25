@@ -1,0 +1,233 @@
+<div class="layout-full-height" style = "overflow: auto">
+	<md-content class="layout-full-height" id="test-set-content">
+	
+
+	<div class = "page-top-bar" >
+		<div class = "page-top-bar-left">
+			<div class = "page-title" uib-tooltip="{{current.currentTestSet.title}}" tooltip-placement = "bottom-left">
+				<span>{{current.currentTestSet.title}}</span>
+			</div>
+		</div>
+
+		<div class = "page-top-bar-right">
+			<md-button class="md-accent inline-block" aria-label="export" disabled = "true" data-ng-if = "!evaluated"
+			style="" uib-tooltip="{{'export.label' | translate}}"
+			tooltip-placement="left">
+				<i class="fa fa-share-square-o icon-button"></i>&nbsp;&nbsp;{{"export.result.label"
+			| translate}}</md-button>
+			<a href="data:application/json;charset=utf-8,{{exportResult()}}" data-ng-if = "false"
+			download="{{current.currentTestSet.title}}_Result.json" title="{{'export.result.label' | translate}}">
+				<md-button class="md-accent inline-block" aria-label="export" 
+			style="" uib-tooltip="{{'export.label' | translate}}"
+			tooltip-placement="left">
+				<i class="fa fa-share-square-o icon-button"></i>&nbsp;&nbsp;{{"export.result.label"
+			| translate}}</md-button>
+			</a>
+			<a href="data:application/csv;charset=utf-8,{{exportResultCSV()}}" data-ng-if = "evaluated"
+			download="{{current.currentTestSet.title}}_Result.csv" title="{{'export.result.label' | translate}}">
+				<md-button class="md-accent inline-block" aria-label="export" 
+			style="" uib-tooltip="{{'export.label' | translate}}"
+			tooltip-placement="left">
+				<i class="fa fa-share-square-o icon-button"></i>&nbsp;&nbsp;{{"export.result.label"
+			| translate}}</md-button>
+			</a>
+			<md-button class="md-accent inline-block" data-ng-click="evaluate()" aria-label = "Evaluate" data-ng-if="current.currentTestSet.children && current.currentTestSet.children.length > 0"
+				style = "color: #666666"><i class="fa fa-play uppercase"></i>&nbsp;&nbsp;{{"run.label"
+			| translate}}</md-button>
+			<md-button class="md-accent inline-block" data-ng-click="createNewTestCase($event)" aria-label = "New Test Case"><i class="fa fa-plus uppercase"></i>&nbsp;&nbsp;{{"button.newTestCase"
+			| translate}}</md-button>
+		</div>
+	</div>
+
+	
+
+
+
+	<md-tabs md-border-bottom class="tabs-height" md-dynamic-height ="false">
+	<md-tab label="{{'request.interface.label' | translate}}"
+		md-on-select="designRequest()" style = "height:100%">
+	<div id="test-set-interface" >
+		<div class="list-toolbar" data-ng-if="current.currentTestSet.children && current.currentTestSet.children.length > 0">
+        	<md-button class="button-icon" data-ng-click="deleteTestCases()" aria-label = "Delete" ng-disabled = "selectedTestCases.length === 0">
+          		<i class="fa fa-trash uppercase" ></i></md-button>
+        	<!--<md-button class="button-icon" data-ng-click="cloneTestCases()" aria-label = "Clone" ng-disabled = "selectedTestCases.length === 0">
+        	  <i class="fa fa-copy uppercase" ></i></md-button>-->
+        	 <div id="test-set-status" data-ng-if = "evaluated">
+				<div data-ng-if ="processed == total && passes == total" class = "passed-status-class"><span>{{'test.set.passed' | translate}}</span><span> ({{passes}}/{{total}})</span><span data-ng-if = "options.isMultiQuery"> - {{'time.taken.label' | translate}} : {{response.time}} ms</span></div>
+        		<div data-ng-if ="processed == total && passes != total" class = "failed-status-class"><span>{{'test.set.failed' | translate}}</span><span> ({{passes}}/{{total}})</span><span data-ng-if = "options.isMultiQuery"> - {{'time.taken.label' | translate}} : {{response.time}} ms</span></div>
+			</div>
+        	<span id = "is-multi-query-panel-outer">
+				<span id = "is-multi-query-panel">
+					<md-switch class = "md-warn inline-block" data-ng-change = "changeRequestType()"
+						data-ng-model="options.isMultiQuery">{{'send.multi.query.label'|translate}}</md-switch>
+				</span>
+			</span>
+		</div>
+		
+		<div class = "empty-data-div" data-ng-if="!(current.currentTestSet.children && current.currentTestSet.children.length > 0)">{{'no.test.case.label' | translate}}</div>
+		<table class = "list-table" data-ng-if="current.currentTestSet.children && current.currentTestSet.children.length > 0">
+			<th style = "width:60px">
+				<md-checkbox ng-checked="allIsChecked()" aria-label = "select all"
+                		md-indeterminate="someIsChecked()"
+                		data-ng-click="toggleAll()">
+			</th>
+			<th data-ng-click="sortBy('title')"><span>{{'test.case.label'
+					| translate}}</span> <span data-ng-show="sortProperty === 'title'"
+				class="sortorder" data-ng-class="{reverse: reverse}"></span></th>
+			<th width="10%" class="text-align-center"
+				data-ng-click="sortBy('expectedResult')"><span>{{'expected.label'
+					| translate}}</span> <span
+				data-ng-show="sortProperty === 'expectedResult'" class="sortorder"
+				data-ng-class="{reverse: reverse}"></span></th>
+			<th width="10%" class="text-align-center"
+				data-ng-click="sortBy('actualResult')"><span>{{'actual.label'
+					| translate}}</span> <span data-ng-show="sortProperty === 'actualResult'"
+				class="sortorder" data-ng-class="{reverse: reverse}"></span></th>
+			<th width="10%" class="text-align-center" data-ng-if = "!options.isMultiQuery"
+				data-ng-click="sortBy('time')"><span>{{'time.label'
+					| translate}} (ms)</span> <span data-ng-show="sortProperty === 'time'"
+				class="sortorder" data-ng-class="{reverse: reverse}"></span></th>
+			<th width="10%" class="text-align-center"
+				data-ng-click="sortBy('status')"><span>{{'status.label'
+					| translate}}</span> <span data-ng-show="sortProperty === 'status'"
+				class="sortorder" data-ng-class="{reverse: reverse}"></span></th>
+			<th width = "100px"></th>
+			<tr data-ng-repeat = "(index, testCase) in current.currentTestSet.children | orderBy:sortProperty:reverse">
+				<td style = "width:60px">
+					<md-checkbox ng-checked="testCaseIsCheck(testCase)" data-ng-click="toggleTestCase(testCase)" aria-label="Select Test Case">
+				</td>
+				<td class ="list-title-cell">
+					<p class = "list-title" data-ng-click = "goToTestCase(testCase, index)" uib-tooltip="{{testCase.title}}" tooltip-placement = "bottom-left">{{testCase.title}}</p>
+					<p class = "list-sub-text" data-ng-if = "testCase.description && testCase.description !== ''" uib-tooltip="{{testCase.description}}" tooltip-placement = "bottom-left">{{testCase.description}}</p>
+					<p class = "list-sub-text" data-ng-if = "!(testCase.description && testCase.description !== '')">{{'no.description.label'|translate}}</p>
+				</td>
+				<td width="10%" class="text-align-center"><span
+					data-ng-class="testCase.expectedResult + '-class'">
+						{{testCase.expectedResult}}</span></td>
+				<td width="10%" class="text-align-center"><span data-ng-if = "evaluated"
+					data-ng-class="testCase.actualResult + '-class'">
+						{{testCase.actualResult}} </span></td>
+				<td width="10%" class="text-align-center" data-ng-if = "!options.isMultiQuery">
+					<div data-ng-class="testCase.time + '-class'" data-ng-if = "evaluated">
+						{{testCase.time}}</div>
+				</td>
+				<td width="10%" class="text-align-center">
+					<div data-ng-class="testCase.status + '-class'" data-ng-if = "evaluated || testCase.status === 'invalid' || testCase.status === 'incomplete'">
+						{{testCase.status}}</div>
+				</td>
+				<td width = "100px" >
+					<md-fab-speed-dial md-open="testCase.openOptions" md-direction="left" class = "md-scale fab-in-table"
+                    	data-ng-click = "optionClick(testCase)">
+        				<md-fab-trigger>
+          					<md-button aria-label="menu" class="md-fab md-primary md-hue-3 md-raised md-mini">
+          						<i class="fa fa-ellipsis-v" aria-label = "fab"></i>
+          					</md-button>
+        				</md-fab-trigger>
+
+        				<md-fab-actions>
+          					<md-button aria-label="Delete" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "deleteTestCase($event, testCase)">
+           						<i class="fa fa-trash" aria-label = "fab" ></i>
+								<md-tooltip>{{'delete.label' | translate}}</md-tooltip>
+          					</md-button>
+
+          					<md-button aria-label="Clone" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "cloneTestCase($event, testCase)">
+           						<i class="fa fa-copy" aria-label = "fab"></i>
+								<md-tooltip>{{'clone.label' | translate}}</md-tooltip>
+							</md-button>
+							  
+							<md-button aria-label="Rename" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "renameTestCase($event, testCase)">
+								<i class="fa fa-edit" aria-label = "fab"></i>
+								<md-tooltip>{{'rename.label' | translate}}</md-tooltip>
+						    </md-button>
+
+          					<md-button aria-label="Details" class="md-fab md-raised md-mini md-primary md-hue-3" data-ng-click = "expandResult(testCase)" data-ng-if = "evaluated">
+           						<i class="fa fa-newspaper-o" aria-label = "fab"></i>
+          					</md-button>
+        				</md-fab-actions>
+      				</md-fab-speed-dial>
+				</td>
+			</tr>
+		</table>
+
+		
+	</div>
+
+	
+	</md-tab> <md-tab label="{{'json.payload.label' | translate}}" ng-disabled = "!options.isMultiQuery"
+		md-on-select="jsonRequest()" class="layout-full-height"> <md-content
+		class="layout-full-height">
+	<div ng-jsoneditor="onTestSetLoad" data-ng-model="request"
+		data-ng-if="!onDesign" options="{mode:'view'}" class="json-editor"></div>
+	</md-content> 
+	
+	</md-tab> </md-tabs> 
+	</md-content>
+	
+
+	<md-sidenav class="side-panel md-sidenav-right response-interface" md-component-id="result-panel"  md-disable-backdrop>
+		<md-button class="md-icon-button md-raised close-button"
+			data-ng-click="closeResult()" aria-label="close"> <i
+			class="fa fa-close icon-button"></i></md-button>
+		<p class = "header">{{'evaluation.label' | translate}} {{'result.label' | translate}}</p>		
+		<p class = "title">{{currentTestCaseDetail.title}}</p>
+		<div data-ng-class="currentTestCaseDetail.status + '-class'" class = "status">
+						{{currentTestCaseDetail.status}} <p data-ng-if = "!options.isMultiQuery">{{'time.taken.label' | translate}} : {{currentTestCaseDetail.time}}ms</p></div>
+		<table>
+				<tr>
+					<td style = "width: 10%" class="label-column"><span>{{'decision.label'
+							| translate}}</span></td>
+					<td style = "width:90%;text-align:left"><span class="allow-class"
+						data-ng-if="currentTestCaseDetail.result.Decision === 'Permit'">{{'allow.label'
+							| translate}}</span> <span class="deny-class"
+						data-ng-if="currentTestCaseDetail.result.Decision === 'Deny'">{{'deny.label'
+							| translate}}</span> <span class="indeterminate-class"
+						data-ng-if="currentTestCaseDetail.result.Decision === 'Indeterminate'">{{'indeterminate.label'
+							| translate}}</span> <span class="notapplicable-class"
+						data-ng-if="currentTestCaseDetail.result.Decision === 'NotApplicable'">{{'not.applicable.label'
+							| translate}}</span>
+						</td>
+				</tr>
+				<tr>
+					<td style = "width:10%" class="label-column"><span>{{'message.label'
+							| translate}}</span></td>
+					<td style = "width:90%;text-align:left"><span class="message">{{currentTestCaseDetail.result.Status.StatusMessage}}</span></td>
+				</tr>
+				<tr data-ng-if="currentTestCaseDetail.result.Obligations.length == 0">
+					<td colspan="2"><span>{{'empty.obligations' |
+							translate}}</span></td>
+				</tr>
+				<tr data-ng-if="currentTestCaseDetail.result.Obligations.length > 0">
+					<td width="100%" class="label-column" colspan = "2"><span>{{'obligations.label'
+							| translate}}</span></td>
+				</tr>
+				<tr>
+					<td width="100%" colspan = "2">
+						<div
+							data-ng-repeat="(index, obligation) in currentTestCaseDetail.result.Obligations"
+							class="obligation-block">
+							<div class="obligation-name-block">
+								<div
+									style="color: #EEEEEE; background: #777777; padding: 5px 10px 5px 10px">{{'name.label'
+									| translate}}</div>
+								<label style="padding: 5px 5px" uib-tooltip="{{obligation.Id}}"
+			tooltip-placement="bottom">{{obligation.Id}}</label>
+							</div>
+							<table class="attribute-table">
+								<tr>
+									<td style="color: #EEEEEE; background: #777777;">{{'attribute.label'
+										| translate}}</td>
+									<td style="color: #EEEEEE; background: #777777;">{{'value.label'
+										| translate}}</td>
+								</tr>
+								<tr
+									data-ng-repeat="(index, attribute) in obligation.AttributeAssignment">
+									<td width="20%" style="color: #666666">{{attribute.AttributeId}}</td>
+									<td><span data-ng-repeat="value in attribute.Value">{{value}}</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+    </md-sidenav>
+</div>

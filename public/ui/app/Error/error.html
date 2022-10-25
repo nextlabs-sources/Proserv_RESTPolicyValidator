@@ -1,0 +1,49 @@
+<div class = "page-top-bar">
+	<div class = "page-top-bar-left">
+		<div class = "page-title">
+			<span>{{'error.label' | translate}}</span>
+		</div>
+	</div>
+
+	<div class = "page-top-bar-right">
+	</div>
+</div>
+
+<md-tabs md-border-bottom class = "tabs-height">
+<md-tab label="{{'server.error.label' | translate}}">	
+	<p class = "tab-context">{{'server.error.text' |translate}}</p>
+	<div class="error-panel">
+		<div class = "empty-data-div" data-ng-if="!serverErrors || serverErrors.length === 0">{{'no.error.label' | translate}}</div>
+		<table class="error-table" data-ng-if = "serverErrors && serverErrors.length > 0">
+			<th width="20%"><span>{{'timestamp.label'
+					| translate}}</span></th>
+			<th width="80%"><span>{{'message.label'
+					| translate}}</span></th>
+			<tr data-ng-repeat = "(index, error) in serverErrors | orderBy:index:true">
+				<td width="20%"><span>
+					{{error.timestamp}}</span></td>
+				<td width="80%"><span>
+					{{error.message}}</span></td>
+			</tr>
+		</table>
+	</div>
+</md-tab>
+<md-tab label="{{'client.error.label' | translate}}">
+	<p class = "tab-context">{{'client.error.text' |translate}}</p>
+	<div class="error-panel">
+		<div class = "empty-data-div" data-ng-if="!clientErrors || clientErrors.length === 0">{{'no.error.label' | translate}}</div>
+		<table class="error-table" data-ng-if = "clientErrors && clientErrors.length > 0">
+			<th width="20%"><span>{{'timestamp.label'
+					| translate}}</span></th>
+			<th width="80%"><span>{{'message.label'
+					| translate}}</span></th>
+			<tr data-ng-repeat = "(index, error) in clientErrors | orderBy:index:true">
+				<td width="20%"><span>
+					{{error.timestamp}}</span></td>
+				<td width="80%"><span>
+					{{error.message}}</span></td>
+			</tr>
+		</table>
+	</div>
+</md-tab>
+</md-tabs>

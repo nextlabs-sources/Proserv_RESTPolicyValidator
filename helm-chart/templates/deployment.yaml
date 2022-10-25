@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "policy-validator.fullname" . }}
+  labels:
+    {{- include "policy-validator.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "policy-validator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "policy-validator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if or .Values.global.image.imagePullSecret .Values.image.imagePullSecret }}
+      imagePullSecrets:
+      {{- if .Values.global.image.imagePullSecret }}
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- else }}
+      - name: {{ .Values.image.imagePullSecret }}
+      {{- end }}
+      {{- end }}
+      securityContext:
+      {{- if .Values.global.securityContext.runAsUser }}
+        {{- toYaml .Values.global.securityContext | nindent 8 }}
+      {{- else }}
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- if .Values.global.image.repository }}
+        image: "{{ .Values.global.image.repository }}/nextlabs-policy-validator:{{ .Chart.AppVersion }}"
+        {{- else }}
+        image: "{{ .Values.image.repository }}/nextlabs-policy-validator:{{ .Chart.AppVersion }}"
+        {{- end }}
+        {{- if .Values.global.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        {{- else }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- end }}
+        ports:
+        - name: http-{{ .Release.Name }}-app
+          containerPort: 8080
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /index.html
+            port: 8888
+          {{- if .Values.global.statusCheck.initialDelay }}
+          initialDelaySeconds: {{ .Values.global.statusCheck.initialDelay }}
+          {{- else }}
+          initialDelaySeconds: {{ .Values.statusCheck.initialDelay | default 180 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /index.html
+            port: 8888
+          {{- if .Values.global.statusCheck.initialDelay }}
+          initialDelaySeconds: {{ .Values.global.statusCheck.initialDelay }}
+          {{- else }}
+          initialDelaySeconds: {{ .Values.statusCheck.initialDelay | default 180 }}
+          {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        {{- if or .Values.global.nextlabs.cc.policyValidatorDataVolumeClaimName .Values.nextlabs.cc.policyValidatorDataVolumeClaimName }}
+        - name: policy-validator-data
+          mountPath: /opt/policyvalidator/data
+        {{- end }}
+        env:
+        - name: NEXTLABS_PV_PORT
+          value: "8080"
+        - name: NEXTLABS_PV_PROTOCOL
+          value: "HTTP"
+        - name: NEXTLABS_PV_URL
+          {{- if .Values.global.nextlabs.cc.dnsName }}
+          value: https://{{ .Values.global.nextlabs.cc.dnsName }}/policy-validator
+          {{- else }}
+          value: https://{{ .Values.nextlabs.cc.dnsName }}/policy-validator
+          {{- end }}
+        - name: NEXTLABS_PV_CC_URL
+          {{- if .Values.global.nextlabs.cc.dnsName }}
+          value: https://{{ .Values.global.nextlabs.cc.dnsName }}
+          {{- else }}
+          value: https://{{ .Values.nextlabs.cc.dnsName }}
+          {{- end }}
+        - name: NEXTLABS_PV_OIDC_CLIENTSECRET
+          {{- if .Values.global.nextlabs.cc.oidc.clientSecret }}
+          value: {{ .Values.global.nextlabs.cc.oidc.clientSecret }}
+          {{- else }}
+          value: {{ .Values.nextlabs.cc.oidc.clientSecret }}
+          {{- end }}
+        - name: NEXTLABS_PV_SSL_CC_CERTIFICATE
+          {{- if .Values.global.nextlabs.cc.caCertificate }}
+          value: {{ .Values.global.nextlabs.cc.caCertificate }}
+          {{- else }}
+          value: {{ .Values.nextlabs.cc.caCertificate }}
+          {{- end }}
+        - name: NEXTLABS_PV_HEALTHCHECK_PORT
+          value: "8888"
+      volumes:
+      {{- if or .Values.global.nextlabs.cc.policyValidatorDataVolumeClaimName .Values.nextlabs.cc.policyValidatorDataVolumeClaimName }}
+      - name: policy-validator-data
+        persistentVolumeClaim:
+          {{- if .Values.global.nextlabs.cc.policyValidatorDataVolumeClaimName }}
+          claimName: {{ .Values.global.nextlabs.cc.policyValidatorDataVolumeClaimName }}
+          {{- else }}
+          claimName: {{ .Values.nextlabs.cc.policyValidatorDataVolumeClaimName }}
+          {{- end }}
+      {{- end }}

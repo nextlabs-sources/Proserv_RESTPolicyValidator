@@ -1,0 +1,32 @@
+{
+  "name": "rest-validator",
+  "version": "3.3.1",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Minh Duong",
+  "dependencies": {
+    "basic-auth": "^1.1.0",
+    "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "fs-extra": "^1.0.0",
+    "jsonfile": "^2.4.0",
+    "method-override": "^2.3.6",
+    "mkdirp": "^0.5.1",
+    "morgan": "^1.7.0",
+    "mu2": "^0.5.21",
+    "ncp": "^2.0.0",
+    "optimist": "^0.5.2",
+    "passport": "^0.4.1",
+    "passport-openidconnect": "^0.0.2",
+    "request": "^2.76.0",
+    "url-parse": "^1.4.1",
+    "winston": "^2.3.0",
+    "xml": "^1.0.1"
+  },
+  "license": "ISC"
+}

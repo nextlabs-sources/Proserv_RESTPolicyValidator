@@ -1,0 +1,5 @@
+def versions = [:]
+
+versions.node = '12.22.12'
+
+ext.versions = versions
